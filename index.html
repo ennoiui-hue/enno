@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小学阶段作文能力与问题诊断测试卷</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f0f7ff;
+            min-height: 100vh;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .shadow-xl { shadow: none; border: 1px solid #eee; }
+        }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script>
+        // --- 1. 数据常量 ---
+        const DIMENSIONS = {
+            'A': { name: '启动困难', color: 'bg-rose-100 border-rose-400 text-rose-700' },
+            'B': { name: '内容贫乏', color: 'bg-orange-100 border-orange-400 text-orange-700' },
+            'C': { name: '流水账作文', color: 'bg-amber-100 border-amber-400 text-amber-700' },
+            'D': { name: '语言平淡', color: 'bg-emerald-100 border-emerald-400 text-emerald-700' },
+            'E': { name: '结构混乱', color: 'bg-teal-100 border-teal-400 text-teal-700' },
+            'F': { name: '抗拒修改', color: 'bg-cyan-100 border-cyan-400 text-cyan-700' },
+            'G': { name: '内容与思想', color: 'bg-sky-100 border-sky-400 text-sky-700' },
+            'H': { name: '书面技术问题', color: 'bg-indigo-100 border-indigo-400 text-indigo-700' },
+            'I': { name: '特定文体问题', color: 'bg-purple-100 border-purple-400 text-purple-700' }
+        };
+
+        const QUESTIONS = [
+            { id: 1, dimension: 'A', text: '面对一个新的作文题目，你第一时间的反应通常是？', options: [{ label: 'A', text: '脑子里马上蹦出几个想法，觉得有东西可写。', score: 1 }, { label: 'B', text: '有点发愁，不知道从哪里下笔，但慢慢想也能想出来。', score: 2 }, { label: 'C', text: '盯着题目发呆，脑子里一片空白，完全不知道写什么。', score: 3 }, { label: 'D', text: '感到很厌烦或很害怕，只想逃避，不想动笔。', score: 4 }] },
+            { id: 2, dimension: 'A', text: '刚开始写作文时（前10分钟），你的状态通常是？', options: [{ label: 'A', text: '拿起笔就开始写，第一句话很快就出来了。', score: 1 }, { label: 'B', text: '写写停停，反复擦掉重写，觉得第一句不够完美。', score: 2 }, { label: 'C', text: '玩橡皮、咬笔头、上厕所，半天没写出一个字。', score: 3 }, { label: 'D', text: '坐在那儿一直想，或者一直喊"妈妈/老师，我写什么呀"，没有别人催就不动。', score: 4 }] },
+            { id: 3, dimension: 'B', text: '你的作文字数通常处于什么状态？', options: [{ label: 'A', text: '轻松超过老师的要求，有时候还要收尾。', score: 1 }, { label: 'B', text: '勉勉强强凑够字数，最后还得数一数。', score: 2 }, { label: 'C', text: '离要求差一大截，怎么写都觉得没话说了。', score: 3 }, { label: 'D', text: '写三五行就没词了，跟发短信一样短。', score: 4 }] },
+            { id: 4, dimension: 'B', text: '你的作文读起来给人的感觉是？', options: [{ label: 'A', text: '细节很丰富，画面感很强。', score: 1 }, { label: 'B', text: '事情讲清楚了，但是干巴巴的，不够精彩。', score: 2 }, { label: 'C', text: '像在看简介或概括，没有具体的过程，像压缩饼干。', score: 3 }, { label: 'D', text: '东一句西一句，不知道想表达什么，内容很空。', score: 4 }] },
+            { id: 5, dimension: 'C', text: '你写叙事文（如《难忘的一天》）时，最大的习惯是？', options: [{ label: 'A', text: '挑选一两件重点事情详细写，其他一笔带过。', score: 1 }, { label: 'B', text: '按照时间顺序，从早到晚把所有事情都写一遍，像记账。', score: 3 }, { label: 'C', text: '句子之间总是用"然后……然后……然后……"连起来。', score: 4 }, { label: 'D', text: '想到什么写什么，有时候写着写着就跑题了。', score: 2 }] },
+            { id: 6, dimension: 'C', text: '文章中最精彩的部分（高潮），你通常写得怎么样？', options: [{ label: 'A', text: '用很多动词和形容词，写得最详细，最吸引人。', score: 1 }, { label: 'B', text: '和前面的篇幅差不多，没什么特别。', score: 2 }, { label: 'C', text: '几句话就结束了，甚至比开头写得还简单。', score: 3 }, { label: 'D', text: '我不知道哪是重点，反正把事情做完就行。', score: 4 }] },
+            { id: 7, dimension: 'D', text: '提到描写（如写暴雨），你的作文里通常是？', options: [{ label: 'A', text: '有很多比喻、拟人，写得很生动。', score: 1 }, { label: 'B', text: '会用一两句平时积累的好词好句。', score: 2 }, { label: 'C', text: '只能写"雨下得很大"，没有其他的词。', score: 3 }, { label: 'D', text: '只是陈述事实："下雨了，地上湿了。"', score: 4 }] },
+            { id: 8, dimension: 'D', text: '读你的作文，能感受到你的心情吗？', options: [{ label: 'A', text: '能，我的喜怒哀乐在字里行间很明显。', score: 1 }, { label: 'B', text: '能感觉到一点，但不是很强烈。', score: 2 }, { label: 'C', text: '感觉不到，像机器人写的，没有感情。', score: 3 }, { label: 'D', text: '我只写看到了什么，不写心里怎么想的。', score: 4 }] },
+            { id: 9, dimension: 'E', text: '你写作文之前会列提纲或打草稿吗？', options: [{ label: 'A', text: '每次都列，想好开头、中间、结尾再动笔。', score: 1 }, { label: 'B', text: '在心里大致想一下流程。', score: 2 }, { label: 'C', text: '想到哪写到哪，经常写着写着就不知道怎么接下去了。', score: 3 }, { label: 'D', text: '从来不分段，或者想分段就分段，没有规律。', score: 4 }] },
+            { id: 10, dimension: 'E', text: '你的文章结尾和开头通常有什么关系？', options: [{ label: 'A', text: '呼应开头，升华主题，首尾呼应。', score: 1 }, { label: 'B', text: '只是简单地写一句"这就是我的xxx"。', score: 2 }, { label: 'C', text: '结尾突然结束，或者开头说东，结尾说西。', score: 3 }, { label: 'D', text: '结尾经常离题，或者完全没有结尾。', score: 4 }] },
+            { id: 11, dimension: 'F', text: '写完初稿后，你会做什么？', options: [{ label: 'A', text: '读两遍，把错别字改掉，把不通顺的句子改顺。', score: 1 }, { label: 'B', text: '只检查一下有没有错别字。', score: 2 }, { label: 'C', text: '写完最后一个字，立刻合上本子，再也不看一眼。', score: 3 }, { label: 'D', text: '极其反感修改，谁让我改我就跟谁急。', score: 4 }] },
+            { id: 12, dimension: 'F', text: '对于老师的修改意见，你的态度是？', options: [{ label: 'A', text: '虚心接受，并尝试重写或修改。', score: 1 }, { label: 'B', text: '勉强看一眼，稍微改一点点。', score: 2 }, { label: 'C', text: '觉得老师不懂我，我觉得我写得挺好，不需要改。', score: 3 }, { label: 'D', text: '一听到要重写或修改就崩溃，甚至会哭或发脾气。', score: 4 }] },
+            { id: 13, dimension: 'G', text: '觉得没东西可写时，你会怎么解决？', options: [{ label: 'A', text: '回忆生活中真实的细节。', score: 1 }, { label: 'B', text: '借鉴作文书里的结构，但写自己的事。', score: 2 }, { label: 'C', text: '觉得生活每天都一样，完全没素材，只能瞎编。', score: 3 }, { label: 'D', text: '把从作文书上看来的故事，换个名字直接抄上去。', score: 4 }] },
+            { id: 14, dimension: 'G', text: '作文的中心思想（你想告诉别人的道理），你通常是？', options: [{ label: 'A', text: '从真实的经历中感悟出来的，很真诚。', score: 1 }, { label: 'B', text: '最后硬加上去的道理，比如"我懂得了坚持"。', score: 2 }, { label: 'C', text: '喊口号，说大话，比如"为祖国做贡献"。', score: 3 }, { label: 'D', text: '经常写偏题，或者被老师批价值观有问题。', score: 4 }] },
+            { id: 15, dimension: 'H', text: '你的作文本子看起来是什么样的？', options: [{ label: 'A', text: '字迹工整，卷面整洁，涂改很少。', score: 1 }, { label: 'B', text: '有一些涂改，但总体还算干净。', score: 2 }, { label: 'C', text: '字迹潦草，像乱画的一样，有时候连自己都不认识。', score: 3 }, { label: 'D', text: '涂改严重，黑乎乎一团，看着很费劲。', score: 4 }] },
+            { id: 16, dimension: 'H', text: '句子和标点符号的使用情况是？', options: [{ label: 'A', text: '句子通顺，标点使用完全正确。', score: 1 }, { label: 'B', text: '偶尔有病句，标点基本正确。', score: 2 }, { label: 'C', text: '经常一逗到底，或者标点乱点。', score: 3 }, { label: 'D', text: '的、地、得不分，经常写出让人看不懂的句子。', score: 4 }] },
+            { id: 17, dimension: 'I', text: '如果让你写《我的妈妈》，你会怎么写？', options: [{ label: 'A', text: '通过几件具体小事来表现妈妈的性格和爱。', score: 1 }, { label: 'B', text: '写妈妈的外貌和一两件事。', score: 2 }, { label: 'C', text: '从头发写到脚，全是外貌描写，像在画证件照。', score: 3 }, { label: 'D', text: '不知道怎么写，写得很乱。', score: 4 }] },
+            { id: 18, dimension: 'I', text: '如果让你写《美丽的校园》，你的习惯是？', options: [{ label: 'A', text: '按游览顺序写，写出花草的样子和动态。', score: 1 }, { label: 'B', text: '写校园里有几栋楼，几个花坛。', score: 2 }, { label: 'C', text: '像报菜名一样：花是红的，草是绿的，树是高的。', score: 3 }, { label: 'D', text: '觉得校园没啥好看的，没意思。', score: 4 }] },
+            { id: 19, dimension: 'I', text: '写想象作文（如《未来的汽车》），你会写？', options: [{ label: 'A', text: '基于现在的科技进行合理想象，解决实际问题。', score: 1 }, { label: 'B', text: '想象它会飞，会潜水。', score: 2 }, { label: 'C', text: '想象得很离谱，完全没有逻辑，像做梦一样。', score: 3 }, { label: 'D', text: '把现在的汽车写一遍，没有任何未来感。', score: 4 }] },
+            { id: 20, dimension: 'I', text: '写读后感时，你最容易出现的问题是？', options: [{ label: 'A', text: '简要介绍内容，重点写自己的感悟和联系生活。', score: 1 }, { label: 'B', text: '内容介绍和感言各占一半。', score: 2 }, { label: 'C', text: '80%都在抄写或复述书里的故事，自己的感受只有一两句。', score: 3 }, { label: 'D', text: '完全是书的内容摘要。', score: 4 }] }
+        ];
+
+        // --- 2. 状态管理 ---
+        let state = {
+            currentIndex: 0,
+            answers: {},
+            isSubmitted: false,
+            testerClicks: 0,
+            showTesterTool: false,
+            clickTimer: null
+        };
+
+        // --- 3. 逻辑处理 ---
+        function calculateResults() {
+            const scores = {};
+            Object.keys(DIMENSIONS).forEach(code => scores[code] = 0);
+            
+            QUESTIONS.forEach(q => {
+                scores[q.dimension] += state.answers[q.id] || 0;
+            });
+
+            const sorted = Object.entries(scores)
+                .sort((a, b) => b[1] - a[1])
+                .map(entry => ({ code: entry[0], score: entry[1], ...DIMENSIONS[entry[0]] }));
+
+            return {
+                scores,
+                main: sorted[0],
+                secondary: sorted[1] && sorted[1].score > 0 ? sorted[1] : null
+            };
+        }
+
+        function render() {
+            const root = document.getElementById('root');
+            if (state.isSubmitted) {
+                const res = calculateResults();
+                root.innerHTML = `
+                    <div class="min-h-screen py-8 px-4 max-w-4xl mx-auto animate-fade-in">
+                        <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white text-center">
+                                <h1 class="text-3xl font-bold mb-2">作文能力问题诊断报告</h1>
+                                <p class="text-blue-100">为成长赋能，让写作不再难</p>
+                            </div>
+                            <div class="p-8 space-y-8">
+                                <section>
+                                    <h2 class="text-xl font-bold text-gray-800 border-l-4 border-blue-600 pl-3 mb-4">一、维度得分概览</h2>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        ${Object.entries(DIMENSIONS).map(([code, dim]) => `
+                                            <div class="p-4 rounded-xl border-2 ${dim.color} flex justify-between items-center">
+                                                <span class="font-medium">${dim.name}</span>
+                                                <span class="text-2xl font-bold">${res.scores[code]}<small class="text-sm font-normal ml-1">分</small></span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </section>
+                                <section>
+                                    <h2 class="text-xl font-bold text-gray-800 border-l-4 border-rose-600 pl-3 mb-4">二、核心诊断结论</h2>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="p-6 rounded-xl border-2 bg-rose-50 border-rose-100">
+                                            <p class="text-gray-700 font-medium">主要问题类型：</p>
+                                            <p class="text-3xl font-bold text-rose-600 mt-1">${res.main.name}</p>
+                                        </div>
+                                        ${res.secondary ? `
+                                            <div class="p-6 rounded-xl border-2 bg-amber-50 border-amber-100">
+                                                <p class="text-gray-700 font-medium">次要问题类型：</p>
+                                                <p class="text-3xl font-bold text-amber-600 mt-1">${res.secondary.name}</p>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </section>
+                                <div class="pt-6 no-print">
+                                    <button onclick="restart()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-lg">重新开始测试</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            const q = QUESTIONS[state.currentIndex];
+            const progress = (Object.keys(state.answers).length / QUESTIONS.length) * 100;
+
+            root.innerHTML = `
+                <div class="min-h-screen py-8 px-4 max-w-3xl mx-auto flex flex-col animate-fade-in">
+                    <header class="mb-10 text-center">
+                        <div class="inline-block p-4 bg-white rounded-3xl shadow-md mb-4"><i class="fas fa-pen-nib text-blue-500 text-4xl"></i></div>
+                        <h1 class="text-3xl font-extrabold text-gray-900 mb-2">作文能力诊断</h1>
+                        <p class="text-gray-500 text-lg">第 ${state.currentIndex + 1} / ${QUESTIONS.length} 题</p>
+                    </header>
+                    <div class="mb-8 sticky top-4 z-10">
+                        <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                            <div class="flex justify-between items-center mb-2">
+                                <span onclick="handleProgressClick()" class="text-sm font-bold text-blue-600 cursor-pointer select-none">测试进度</span>
+                                <div class="flex items-center gap-2">
+                                    ${state.showTesterTool ? `<button onclick="fastFinish()" class="bg-amber-100 text-amber-700 text-xs px-2 py-1 rounded border border-amber-300">快速完成</button>` : ''}
+                                    <span class="text-sm font-bold text-gray-500">${Math.round(progress)}%</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-blue-500 h-2.5 rounded-full transition-all duration-500" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow flex flex-col justify-center">
+                        <div class="bg-white rounded-3xl shadow-lg border border-gray-100 p-8">
+                            <h3 class="text-xl font-bold text-gray-800 mb-8">${q.text}</h3>
+                            <div class="grid grid-cols-1 gap-4">
+                                ${q.options.map(opt => {
+                                    const isSel = state.answers[q.id] === opt.score;
+                                    return `
+                                        <button onclick="selectOption(${q.id}, ${opt.score})" class="option-btn text-left p-5 rounded-2xl border-2 transition-all flex items-start gap-4 ${isSel ? 'border-blue-500 bg-blue-50 ring-4 ring-blue-50' : 'border-gray-50 bg-gray-50 hover:bg-gray-100'}">
+                                            <span class="w-8 h-8 rounded-full border-2 flex items-center justify-center text-sm font-bold ${isSel ? 'border-blue-500 bg-blue-500 text-white' : 'border-gray-300 text-gray-400'}">${opt.label}</span>
+                                            <span class="${isSel ? 'text-blue-900 font-medium' : 'text-gray-600'}">${opt.text}</span>
+                                        </button>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-12 flex items-center justify-between pb-12">
+                        <button onclick="prev()" class="px-6 py-3 rounded-2xl font-bold ${state.currentIndex === 0 ? 'invisible' : 'text-gray-600 hover:bg-gray-200'}">上一题</button>
+                        ${state.currentIndex === QUESTIONS.length - 1 && state.answers[q.id] ? 
+                            `<button onclick="submit()" class="px-10 py-4 bg-blue-600 text-white rounded-2xl font-bold shadow-xl animate-bounce">提交结果</button>` : 
+                            `<button onclick="next()" ${!state.answers[q.id] ? 'disabled' : ''} class="px-8 py-4 rounded-2xl font-bold ${!state.answers[q.id] ? 'bg-gray-200 text-gray-400' : 'bg-gray-800 text-white shadow-lg'}">下一题</button>`
+                        }
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- 4. 交互函数 ---
+        window.selectOption = (id, score) => {
+            state.answers[id] = score;
+            if (state.currentIndex < QUESTIONS.length - 1) {
+                setTimeout(() => { state.currentIndex++; render(); window.scrollTo({top:0, behavior:'smooth'}); }, 300);
+            } else { render(); }
+        };
+        window.next = () => { if (state.currentIndex < QUESTIONS.length - 1) { state.currentIndex++; render(); } };
+        window.prev = () => { if (state.currentIndex > 0) { state.currentIndex--; render(); } };
+        window.submit = () => { state.isSubmitted = true; render(); window.scrollTo({top:0, behavior:'smooth'}); };
+        window.restart = () => { state = { currentIndex: 0, answers: {}, isSubmitted: false, testerClicks: 0, showTesterTool: false, clickTimer: null }; render(); };
+        window.handleProgressClick = () => {
+            if (state.clickTimer) clearTimeout(state.clickTimer);
+            state.testerClicks++;
+            if (state.testerClicks >= 5) { state.showTesterTool = true; render(); }
+            else { state.clickTimer = setTimeout(() => state.testerClicks = 0, 1000); }
+        };
+        window.fastFinish = () => {
+            QUESTIONS.forEach(q => { if (!state.answers[q.id]) state.answers[q.id] = 1; });
+            state.isSubmitted = true; render();
+        };
+
+        render();
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
